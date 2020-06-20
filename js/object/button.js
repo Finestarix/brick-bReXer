@@ -1,5 +1,5 @@
 import {normalFont} from "../utility/font.js";
-import {buttonDangerColor, buttonHoverColor, buttonNormalColor, darkColor, lightColor} from "../utility/colors.js";
+import {dangerColor, buttonHoverColor, buttonNormalColor, darkColor, lightColor} from "../utility/colors.js";
 
 export default class Button {
 
@@ -37,7 +37,7 @@ export default class Button {
 
         this.canvasContext.fillStyle = (this.isHover) ?
             buttonHoverColor : (this.isDanger) ?
-                buttonDangerColor : buttonNormalColor;
+                dangerColor : buttonNormalColor;
 
         this.canvasContext.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 

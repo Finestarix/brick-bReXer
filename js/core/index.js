@@ -5,32 +5,29 @@ import Button from "../object/button.js";
 import MoveListener from "../listener/moveListener.js";
 import ClickListener from "../listener/clickListener.js";
 
-import {backgroundColor} from '../utility/colors.js';
-import {canvasID, canvasTitle} from "../utility/string.js";
-
-const screenWidth = 1200;
-const screenHeight = 600;
+import {menuBackgroundColor} from '../utility/colors.js';
+import {canvasHeight, canvasID, canvasTitle, canvasWidth} from "../utility/string.js";
 
 const totalButton = 2;
 const totalMotionCircle = 30;
 
 let mousePosition = {
-    x: screenWidth / 2,
-    y: screenHeight / 2
+    x: canvasWidth / 2,
+    y: canvasHeight / 2
 }
 
 function initializeCanvas() {
     const canvasObject = document.getElementById(canvasID);
     canvasObject.style.cursor = 'none';
-    canvasObject.width = screenWidth;
-    canvasObject.height = screenHeight;
+    canvasObject.width = canvasWidth;
+    canvasObject.height = canvasHeight;
 
     return canvasObject;
 }
 
 function initializeTitle(canvasContext) {
-    const x = screenWidth / 2;
-    const y = screenHeight / 2 - 80;
+    const x = canvasWidth / 2;
+    const y = canvasHeight / 2 - 80;
     return new Title(canvasContext, x, y, canvasTitle);
 }
 
@@ -50,8 +47,11 @@ function initializeButton(canvasContext) {
     const width = 400;
     const height = 50;
 
-    const x = (screenWidth / 2) - (width / 2);
-    const y = [(screenHeight / 2) - (height * 2) + 70, (screenHeight / 2) + 70]
+    const x = (canvasWidth / 2) - (width / 2);
+    const y = [
+        (canvasHeight / 2) - (height * 2) + 70,
+        (canvasHeight / 2) + 70
+    ]
 
     const text = ['Play', 'Exit']
     const isDanger = [false, true]
@@ -76,8 +76,8 @@ function initializeMotionCircles(canvasObject, canvasContext) {
 function animate() {
     requestAnimationFrame(animate);
 
-    canvasContext.fillStyle = backgroundColor;
-    canvasContext.fillRect(0, 0, screenWidth, screenHeight);
+    canvasContext.fillStyle = menuBackgroundColor;
+    canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
 
     title.update();
     buttons.forEach(button => button.update());

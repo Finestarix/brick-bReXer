@@ -1,5 +1,5 @@
 import {motionCircleColors} from '../utility/colors.js';
-import {randomInteger} from '../utility/random.js';
+import randomInteger from '../utility/random.js';
 
 export default class MotionCircle {
 
