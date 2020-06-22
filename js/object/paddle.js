@@ -1,11 +1,10 @@
 import {lightColor} from "../utility/colors.js";
 
-const gapBottomPaddle = 10;
-
 export default class Paddle {
 
-    constructor(canvasContext, screenWidth, screenHeight) {
+    constructor(canvasContext, screenWidth, screenHeight, screenMargin) {
         this.canvasContext = canvasContext;
+        this.screenMargin = screenMargin;
 
         this.width = 150;
         this.height = 20;
@@ -18,17 +17,17 @@ export default class Paddle {
 
         this.position = {
             x: (this.screenWidth / 2) - (this.width / 2),
-            y: this.screenHeight - this.height - gapBottomPaddle
+            y: this.screenHeight - this.height - this.screenMargin
         }
     }
 
     update() {
         this.position.x += this.currentSpeed;
 
-        if (this.position.x < 0)
-            this.position.x = 0;
-        else if (this.position.x + this.width > this.screenWidth)
-            this.position.x = this.screenWidth - this.width;
+        if (this.position.x < this.screenMargin)
+            this.position.x = this.screenMargin;
+        else if (this.position.x + this.width > this.screenWidth - this.screenMargin)
+            this.position.x = this.screenWidth - this.width - this.screenMargin;
 
         this.draw();
     }
@@ -49,6 +48,5 @@ export default class Paddle {
     stop() {
         this.currentSpeed = 0;
     }
-
 
 }

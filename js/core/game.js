@@ -27,7 +27,7 @@ const canvasContext = canvasObject.getContext('2d');
 const game = new Game(canvasContext, canvasWidth, canvasHeight);
 animate();
 
-setInterval(test, game.brickAttribute.speed)
+setInterval(test, game.brickSpeedGenerate);
 function test() {
     // game.mutateBall();
     game.increaseBallY();

@@ -1,13 +1,17 @@
 import {gameBackgroundColor, lightColor} from "../utility/colors.js";
+import randomInteger from "../utility/random.js";
+
+const brokenMultiplier = 5;
 
 export default class Brick {
 
     constructor(canvasContext, position, health) {
         this.canvasContext = canvasContext;
 
-        this.health = health;
-        this.width = 105;
-        this.height = 35;
+        this.maximumHealth = health;
+        this.currentHealth = health;
+        this.width = 80;
+        this.height = 20;
 
         this.position = position;
     }
@@ -19,13 +23,30 @@ export default class Brick {
     draw() {
         this.canvasContext.beginPath();
 
-        this.canvasContext.strokeStyle = gameBackgroundColor;
-        this.canvasContext.lineWidth = '5';
         this.canvasContext.fillStyle = lightColor;
         this.canvasContext.rect(this.position.x, this.position.y, this.width, this.height);
-
-        this.canvasContext.stroke();
         this.canvasContext.fill();
+
+        this.canvasContext.beginPath();
+        this.canvasContext.lineWidth = '3';
+        this.canvasContext.strokeStyle = gameBackgroundColor;
+
+        const brokenHealth = (this.maximumHealth - this.currentHealth);
+
+        if (brokenHealth > 0) {
+            for (let i = 0; i <= brokenHealth; i++) {
+                const x = randomInteger(this.position.x, this.position.x + this.width);
+                const y = randomInteger(this.position.y, this.position.y + this.height);
+
+                this.canvasContext.lineTo(x, y);
+            }
+
+            this.canvasContext.stroke();
+        }
+    }
+
+    decreaseHealth() {
+        this.currentHealth--;
     }
 
 }
