@@ -23,8 +23,8 @@ export default class Score {
         this.canvasContext.fillText('Score: ' + this.text, this.x, this.y);
     }
 
-    changeScore() {
-
+    setScore(newScore) {
+        this.text = newScore;
     }
 
 }

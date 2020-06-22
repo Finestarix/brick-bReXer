@@ -1,4 +1,4 @@
-import {gameBackgroundColor, lightColor} from "../utility/colors.js";
+import {dangerColor, gameBackgroundColor, lightColor} from "../utility/colors.js";
 import randomInteger from "../utility/random.js";
 
 const brokenMultiplier = 5;
@@ -34,7 +34,7 @@ export default class Brick {
         const brokenHealth = (this.maximumHealth - this.currentHealth);
 
         if (brokenHealth > 0) {
-            for (let i = 0; i <= brokenHealth; i++) {
+            for (let i = 0; i <= brokenHealth * brokenMultiplier ; i++) {
                 const x = randomInteger(this.position.x, this.position.x + this.width);
                 const y = randomInteger(this.position.y, this.position.y + this.height);
 
@@ -47,6 +47,12 @@ export default class Brick {
 
     decreaseHealth() {
         this.currentHealth--;
+    }
+
+    changeColor() {
+        this.canvasContext.fillStyle = dangerColor;
+        this.canvasContext.rect(this.position.x, this.position.y, this.width, this.height);
+        this.canvasContext.fill();
     }
 
 }

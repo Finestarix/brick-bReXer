@@ -1,5 +1,7 @@
 import {lightColor} from "../utility/colors.js";
 
+const paddleIncreaseDecreaseValue = 20;
+
 export default class Paddle {
 
     constructor(canvasContext, screenWidth, screenHeight, screenMargin) {
@@ -47,6 +49,14 @@ export default class Paddle {
 
     stop() {
         this.currentSpeed = 0;
+    }
+
+    increasePaddleWidth() {
+        this.width += paddleIncreaseDecreaseValue;
+    }
+
+    decreasePaddleWidth() {
+        this.width -= paddleIncreaseDecreaseValue;
     }
 
 }

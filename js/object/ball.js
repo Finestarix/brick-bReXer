@@ -8,16 +8,18 @@ const antiClockwise = false;
 
 export default class Ball {
 
-    constructor(canvasContext, x, y, screenWidth, screenMargin) {
+    constructor(canvasContext, x, y, screenWidth, screenHeight, screenMargin) {
         this.canvasContext = canvasContext;
         this.screenMargin = screenMargin;
 
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
         this.radius = 8;
 
-        this.screenWidth = screenWidth;
+        this.comboBrick = 1;
 
         this.speed = {x: this.getRandomSpeedX(), y: this.getRandomSpeedY()};
-
         this.position = {x: x, y: y};
     }
 
@@ -53,6 +55,28 @@ export default class Ball {
         while (randomSpeedY <= 1 && randomSpeedY >= -1)
             randomSpeedY = randomInteger(-3, 3);
         return randomSpeedY;
+    }
+
+    increaseComboBrick() {
+        this.comboBrick++;
+    }
+
+    resetComboBrick() {
+        this.comboBrick = 1;
+    }
+
+    isBallOutsideScreen() {
+        return this.position.y >= this.screenHeight;
+    }
+
+    increaseBallSpeed() {
+        this.speed.x += 1;
+        this.speed.y += 1;
+    }
+
+    decreaseBallSpeed() {
+        this.speed.x -= 1;
+        this.speed.y -= 1;
     }
 
 }

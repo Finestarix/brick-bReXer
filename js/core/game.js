@@ -1,7 +1,8 @@
 import Game from "../object/game.js";
 
-import {canvasID, canvasWidth, canvasHeight} from "../utility/string.js";
-import {gameBackgroundColor} from "../utility/colors.js";
+import {canvasHeight, canvasID, canvasWidth} from "../utility/string.js";
+
+let intervalID = null;
 
 function initializeCanvas() {
     const canvasObject = document.getElementById(canvasID);
@@ -12,35 +13,24 @@ function initializeCanvas() {
     return canvasObject;
 }
 
-function animate() {
-    requestAnimationFrame(animate);
+function update() {
+    requestAnimationFrame(update);
 
-    canvasContext.fillStyle = gameBackgroundColor;
-    canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
+    if (game.checkAnimationCondition())
+        clearInterval(intervalID);
 
     game.update();
+}
+
+function generateBrick() {
+    game.increaseBallY();
+    game.generateBrick();
 }
 
 const canvasObject = initializeCanvas();
 const canvasContext = canvasObject.getContext('2d');
 
 const game = new Game(canvasContext, canvasWidth, canvasHeight);
-animate();
+update();
 
-setInterval(test, game.brickSpeedGenerate);
-function test() {
-    // game.mutateBall();
-    game.increaseBallY();
-    game.generateBrick();
-}
-
-/*
-Power Up:
-1. Increase Width Paddle
-2. Decrease Width Paddle
-3. Increase Life
-4. Mutate Ball
-5. Increase Ball Speed
-6. Decrease Ball Speed
-7. Score Multiplier
- */
+intervalID = setInterval(generateBrick, game.brickSpeedGenerate);

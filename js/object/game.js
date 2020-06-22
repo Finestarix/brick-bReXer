@@ -3,12 +3,15 @@ import Score from "./score.js";
 import Life from "./life.js";
 import Ball from "./ball.js";
 import Brick from "./brick.js";
+import Power from "./power.js";
 
 import PaddleListener from "../listener/paddleListener.js";
 
 import {getSideCollision, isCollision} from "../utility/collision.js";
 import randomInteger from "../utility/random.js";
-import {lightColor} from "../utility/colors.js";
+
+import {gameBackgroundColor, lightColor} from "../utility/colors.js";
+import {powerType, totalPowerType} from "./power.js";
 
 const maximumBrickRow = 12;
 const screenMargin = 20;
@@ -27,6 +30,7 @@ export default class Game {
         this.lifes = this.initializeLife();
 
         this.scoreMultiplier = this.initializeScoreMultiplier();
+        this.scoreCounter = 1;
         this.totalScore = 0;
         this.score = this.initializeScore();
 
@@ -40,12 +44,18 @@ export default class Game {
         this.brickSpeedGenerate = this.initializeBrickSpeedGenerate();
         this.brickHealthGenerate = this.initializeBrickHealthGenerate();
         this.bricks = [];
-        this.generateBrick()
+        this.generateBrick();
+
+        this.powers = [];
     }
 
     update() {
         this.checkBallPaddleCollision();
-        this.checkBrickPaddleCollision();
+        this.checkBallBrickCollision();
+        this.checkPowerPaddleCollision();
+
+        this.checkBallCondition();
+
         this.draw();
     }
 
@@ -53,11 +63,15 @@ export default class Game {
         this.canvasContext.beginPath();
 
         this.canvasContext.fillStyle = lightColor;
-        this.canvasContext.rect(screenMargin, this.screenHeight - screenMargin * 4, this.screenWidth - screenMargin * 2, 2);
+        this.canvasContext.rect(screenMargin, this.screenHeight - screenMargin * 4,
+            this.screenWidth - screenMargin * 2, 2);
         this.canvasContext.fill();
     }
 
     draw() {
+        this.canvasContext.fillStyle = gameBackgroundColor;
+        this.canvasContext.fillRect(0, 0, this.screenWidth, this.screenHeight);
+
         this.drawEndLine();
 
         this.score.update();
@@ -65,6 +79,7 @@ export default class Game {
         this.lifes.forEach(life => life.update());
         this.balls.forEach(ball => ball.update());
         this.bricks.forEach(brick => brick.update());
+        this.powers.forEach(power => power.update());
     }
 
     initializeTotalLife() {
@@ -105,7 +120,7 @@ export default class Game {
 
         const x = this.screenWidth / 2;
         const y = this.screenHeight - 40;
-        balls.push(new Ball(this.canvasContext, x, y, this.screenWidth, screenMargin));
+        balls.push(new Ball(this.canvasContext, x, y, this.screenWidth, this.screenHeight, screenMargin));
 
         return balls;
     }
@@ -134,8 +149,8 @@ export default class Game {
     initializeBrickHealthGenerate() {
         return (this.difficulty === 'Easy') ?
             1 : (this.difficulty === 'Medium') ?
-                1 : (this.difficulty === 'Hard') ?
-                    2 : 0;
+                2 : (this.difficulty === 'Hard') ?
+                    3 : 0;
     }
 
     generateBrick() {
@@ -156,44 +171,18 @@ export default class Game {
         }
     }
 
-    increaseLife() {
-        const position = {x: this.screenWidth - (this.totalLife * 40) - 40, y: 10};
-        this.lifes.push(new Life(this.canvasContext, position));
-        this.totalLife++;
-    }
-
-    decreaseLife() {
-        this.totalLife--;
-        this.lifes.pop();
-    }
-
-    increaseScore(increasingPoint) {
-        this.totalScore += increasingPoint;
-    }
-
-    mutateBall() {
-        this.balls.forEach(ball => {
-            this.balls.push(new Ball(this.canvasContext, ball.position.x, ball.position.y,
-                this.screenWidth, screenMargin));
-        });
-    }
-
-    increaseBallY() {
-        this.bricks.forEach(brick => {
-            brick.position.y += 40;
-        });
-    }
-
     checkBallPaddleCollision() {
         this.balls.forEach(ball => {
             if (isCollision(ball, this.paddle)) {
                 ball.speed.y = -ball.speed.y;
                 ball.position.y = this.paddle.position.y - ball.radius;
+
+                ball.resetComboBrick();
             }
         });
     }
 
-    checkBrickPaddleCollision() {
+    checkBallBrickCollision() {
 
         this.balls.forEach(ball => {
             this.bricks.forEach(brick => {
@@ -208,11 +197,125 @@ export default class Game {
                     if (brick.currentHealth === 0) {
                         const index = this.bricks.indexOf(brick);
                         this.bricks.splice(index, 1);
+
+                        if (this.isGetPower()) {
+                            this.createPower(brick.position);
+                        }
                     }
+
+                    this.increaseScore(ball.comboBrick);
+                    ball.increaseComboBrick();
                 }
             })
         });
     }
 
+    checkPowerPaddleCollision() {
+        this.powers.forEach(power => {
+            if (isCollision(power, this.paddle)) {
+                const index = this.powers.indexOf(power);
+                this.powers.splice(index, 1);
 
+                for (let i = 0; i < totalPowerType; i++)
+                    if (power.powerType === powerType[i])
+                        switch (i) {
+                            case 0:
+                                this.paddle.increasePaddleWidth();
+                                break;
+                            case 1:
+                                this.paddle.decreasePaddleWidth();
+                                break;
+                            case 2:
+                                this.increaseLife();
+                                break;
+                            case 3:
+                                this.mutateBall();
+                                break;
+                            case 4:
+                                this.balls.forEach(ball => ball.increaseBallSpeed());
+                                break;
+                            case 5:
+                                this.balls.forEach(ball => ball.decreaseBallSpeed());
+                                break;
+                            case 6:
+                                this.increaseScoreMultiplier();
+                                break;
+                        }
+            }
+        });
+    }
+
+    increaseScore(currentCombo) {
+        this.totalScore += 10 * this.scoreMultiplier * this.scoreCounter * currentCombo;
+        this.score.setScore(this.totalScore);
+    }
+
+    isGetPower() {
+        const randomThreshold = (this.difficulty === 'Easy') ?
+            30 : (this.difficulty === 'Medium') ?
+                20 : (this.difficulty === 'Hard') ?
+                    10 : 0;
+
+        return randomInteger(1, 100) <= randomThreshold;
+    }
+
+    createPower(position) {
+        position.y += 20;
+        console.log('push');
+        this.powers.push(new Power(this.canvasContext, position));
+    }
+
+    checkAnimationCondition() {
+        let isOver = false;
+
+        this.bricks.forEach(brick => {
+            if (brick.position.y > this.screenHeight - screenMargin * 4)
+                isOver = true;
+        });
+
+        if (this.lifes.length === 0)
+            isOver = true;
+
+        return isOver;
+    }
+
+    checkBallCondition() {
+        this.balls.forEach(ball => {
+            if (ball.isBallOutsideScreen()) {
+                if (this.balls.length === 1)
+                    this.decreaseLife();
+
+                const index = this.balls.indexOf(ball);
+                this.balls.splice(index, 1);
+            }
+        });
+    }
+
+    decreaseLife() {
+        this.totalLife--;
+        this.lifes.pop();
+    }
+
+    increaseBallY() {
+        this.bricks.forEach(brick => {
+            brick.position.y += 40;
+        });
+    }
+
+    increaseLife() {
+        const position = {x: this.screenWidth - (this.totalLife * 40) - 30 - screenMargin, y: 10};
+        this.lifes.push(new Life(this.canvasContext, position));
+        this.totalLife++;
+    }
+
+    mutateBall() {
+        this.balls.forEach(ball => {
+            this.balls.push(new Ball(this.canvasContext, ball.position.x, ball.position.y,
+                this.screenWidth, this.screenHeight, screenMargin));
+        });
+    }
+
+    increaseScoreMultiplier() {
+        this.scoreMultiplier += 0.2;
+    }
 }
