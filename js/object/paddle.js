@@ -59,4 +59,10 @@ export default class Paddle {
         this.width -= paddleIncreaseDecreaseValue;
     }
 
+    resetPaddlePosition() {
+        this.position = {
+            x: (this.screenWidth / 2) - (this.width / 2),
+            y: this.screenHeight - this.height - this.screenMargin
+        }
+    }
 }

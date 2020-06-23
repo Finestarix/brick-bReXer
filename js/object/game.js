@@ -3,7 +3,9 @@ import Score from "./score.js";
 import Life from "./life.js";
 import Ball from "./ball.js";
 import Brick from "./brick.js";
-import Power from "./power.js";
+import Lose from "./lose.js";
+import Power, {powerType, totalPowerType} from "./power.js";
+import MusicHandler from "./music.js";
 
 import PaddleListener from "../listener/paddleListener.js";
 
@@ -11,7 +13,6 @@ import {getSideCollision, isCollision} from "../utility/collision.js";
 import randomInteger from "../utility/random.js";
 
 import {gameBackgroundColor, lightColor} from "../utility/colors.js";
-import {powerType, totalPowerType} from "./power.js";
 
 const maximumBrickRow = 12;
 const screenMargin = 20;
@@ -47,6 +48,11 @@ export default class Game {
         this.generateBrick();
 
         this.powers = [];
+
+        this.music = this.initializeMusic();
+        this.music.playBackgroundSound();
+
+        this.lose = this.initializeLose();
     }
 
     update() {
@@ -80,6 +86,13 @@ export default class Game {
         this.balls.forEach(ball => ball.update());
         this.bricks.forEach(brick => brick.update());
         this.powers.forEach(power => power.update());
+
+        if (this.checkAnimationCondition()) {
+            this.lose.score = this.totalScore;
+            this.lose.update();
+
+            setTimeout(this.backToMenu, 3000);
+        }
     }
 
     initializeTotalLife() {
@@ -171,6 +184,14 @@ export default class Game {
         }
     }
 
+    initializeMusic() {
+        return new MusicHandler();
+    }
+
+    initializeLose() {
+        return new Lose(this.canvasContext, this.screenWidth, this.screenHeight, 'You Lose', this.totalScore);
+    }
+
     checkBallPaddleCollision() {
         this.balls.forEach(ball => {
             if (isCollision(ball, this.paddle)) {
@@ -178,6 +199,8 @@ export default class Game {
                 ball.position.y = this.paddle.position.y - ball.radius;
 
                 ball.resetComboBrick();
+
+                this.music.playCollisionPaddleSound();
             }
         });
     }
@@ -192,15 +215,16 @@ export default class Game {
                     if (collisionSide === 'right' || collisionSide === 'left') ball.speed.x = -ball.speed.x;
                     else ball.speed.y = -ball.speed.y;
 
+                    this.music.playCollisionBrickSound();
+
                     brick.decreaseHealth();
 
                     if (brick.currentHealth === 0) {
                         const index = this.bricks.indexOf(brick);
                         this.bricks.splice(index, 1);
 
-                        if (this.isGetPower()) {
+                        if (this.isGetPower())
                             this.createPower(brick.position);
-                        }
                     }
 
                     this.increaseScore(ball.comboBrick);
@@ -282,8 +306,16 @@ export default class Game {
     checkBallCondition() {
         this.balls.forEach(ball => {
             if (ball.isBallOutsideScreen()) {
-                if (this.balls.length === 1)
+                if (this.balls.length === 1) {
                     this.decreaseLife();
+
+                    this.music.playLifeLostSound();
+
+                    if (!this.checkAnimationCondition()) {
+                        this.resetBall();
+                        this.paddle.resetPaddlePosition();
+                    }
+                }
 
                 const index = this.balls.indexOf(ball);
                 this.balls.splice(index, 1);
@@ -308,6 +340,12 @@ export default class Game {
         this.totalLife++;
     }
 
+    resetBall() {
+        const x = this.screenWidth / 2;
+        const y = this.screenHeight - 40;
+        this.balls.push(new Ball(this.canvasContext, x, y, this.screenWidth, this.screenHeight, screenMargin));
+    }
+
     mutateBall() {
         this.balls.forEach(ball => {
             this.balls.push(new Ball(this.canvasContext, ball.position.x, ball.position.y,
@@ -317,5 +355,11 @@ export default class Game {
 
     increaseScoreMultiplier() {
         this.scoreMultiplier += 0.2;
+    }
+
+    backToMenu() {
+        const currentPath = window.location.pathname;
+        const currentDirectory = currentPath.substring(0, currentPath.lastIndexOf('/'));
+        window.location.replace(currentDirectory + "/index.html");
     }
 }

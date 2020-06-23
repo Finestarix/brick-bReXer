@@ -2,6 +2,8 @@ import {lightColor} from "../utility/colors.js";
 
 import randomInteger from "../utility/random.js";
 
+import MusicHandler from "./music.js";
+
 const startAngle = 0;
 const endAngle = Math.PI * 2;
 const antiClockwise = false;
@@ -21,6 +23,8 @@ export default class Ball {
 
         this.speed = {x: this.getRandomSpeedX(), y: this.getRandomSpeedY()};
         this.position = {x: x, y: y};
+
+        this.music = new MusicHandler();
     }
 
     update() {
@@ -28,10 +32,13 @@ export default class Ball {
         this.position.y += this.speed.y;
 
         if (this.position.x + this.radius > this.screenWidth - this.screenMargin ||
-            this.position.x - this.screenMargin < this.radius)
+            this.position.x - this.screenMargin < this.radius) {
             this.speed.x = -this.speed.x;
-        else if (this.position.y - this.screenMargin - 30 < this.radius)
+            this.music.playCollisionWallSound();
+        } else if (this.position.y - this.screenMargin - 30 < this.radius) {
             this.speed.y = -this.speed.y;
+            this.music.playCollisionWallSound();
+        }
 
         this.draw();
     }
