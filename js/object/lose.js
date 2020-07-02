@@ -18,18 +18,19 @@ export default class Lose {
     }
 
     draw() {
-        const measureText = this.canvasContext.measureText(this.text);
+        const measureText1 = this.canvasContext.measureText(this.text);
+        const measureText2 = this.canvasContext.measureText('Score: ' + this.score);
 
         this.canvasContext.font = titleFont;
         this.canvasContext.fillStyle = lightColor;
 
         const position1 = {
-            x: (this.screenWidth / 2) - (measureText.width / 2),
+            x: (this.screenWidth / 2) - (measureText1.width / 2),
             y: (this.screenHeight / 2) - 40
         }
 
         const position2 = {
-            x: (this.screenWidth / 2) - (measureText.width / 2),
+            x: (this.screenWidth / 2) - (measureText2.width / 2),
             y: (this.screenHeight / 2) + 40
         }
 

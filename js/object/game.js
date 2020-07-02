@@ -285,7 +285,6 @@ export default class Game {
 
     createPower(position) {
         position.y += 20;
-        console.log('push');
         this.powers.push(new Power(this.canvasContext, position));
     }
 
